@@ -112,7 +112,7 @@ int RodaiSensor::readRegisters(uint8_t addr, uint8_t funcCode, uint16_t strAddr,
 
 	uint8_t *_data = (uint8_t *)malloc(RS485_BUF_SIZE);
 	int len = 0;
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		vTaskDelay(75 / portTICK_PERIOD_MS);
 		len = uart_read_bytes(_uart_num, _data, RS485_BUF_SIZE, RS485_PACKET_READ_TICS);
