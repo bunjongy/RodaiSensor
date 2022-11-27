@@ -1,7 +1,7 @@
-# ESP32AnalogRead
-Load the calibration data and provide a calibrated analog read
+# RodaiSensor
+Read Rodai sensor data
 
-# Documentation by Doxygen
+# Documentation by Yosapa
 
-[ESP32AnalogRead Doxygen](https://madhephaestus.github.io/ESP32AnalogRead/files.html)
+[RodaiSensor Yosapa](https://madhephaestus.github.io/ESP32AnalogRead/files.html)
 

@@ -1,21 +1,25 @@
 #pragma once
 #include <Arduino.h>
-#include "esp_adc_cal.h"
-#define V_REF 1100  // ADC reference voltage
+#include "driver/uart.h"
 
-
-class ESP32AnalogRead {
+class RodaiSensor
+{
 private:
-	int myPin=0;
-	 esp_adc_cal_characteristics_t characteristics;
-	 adc_channel_t channel ;
-	 adc1_channel_t adc1_channel;
-	 adc2_channel_t adc2_channel;
-	 boolean attached=false;
-public :
-	ESP32AnalogRead(int pin=-1);
-	~ESP32AnalogRead(){}
-	void attach(int pin);
-	float readVoltage();
-	uint32_t readMiliVolts();
+	uart_port_t _uart_num = UART_NUM_1;
+	int _baud_rate = 9600;
+	bool crc_tab16_init = false;
+	uint16_t crc_tab16[256];
+	void init_crc16_tab(void);
+	uint16_t crc_modbus(const unsigned char *input_str, size_t num_bytes);
+
+public:
+	RodaiSensor(uart_port_t uart_num = UART_NUM_1,
+				int tx_io_num = GPIO_NUM_23,
+				int rx_io_num = GPIO_NUM_22,
+				int rts_io_num = GPIO_NUM_4,
+				int cts_io_num = UART_PIN_NO_CHANGE,
+				int baud_rate = 9600);
+
+	int ReadHoldingRegisters(uint8_t addr, uint16_t strAddr, uint16_t count, uint8_t *data);
+	int ReadHoldingRegisters(uint8_t addr, uint16_t strAddr, uint16_t count, uint8_t *data, int temp_baud_rate);
 };
