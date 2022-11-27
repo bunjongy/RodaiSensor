@@ -21,24 +21,18 @@ void RodaiSensor::init_crc16_tab(void)
 	uint16_t j;
 	uint16_t crc;
 	uint16_t c;
-
 	for (i = 0; i < 256; i++)
 	{
-
 		crc = 0;
 		c = i;
-
 		for (j = 0; j < 8; j++)
 		{
-
 			if ((crc ^ c) & 0x0001)
 				crc = (crc >> 1) ^ CRC_POLY_16;
 			else
 				crc = crc >> 1;
-
 			c = c >> 1;
 		}
-
 		crc_tab16[i] = crc;
 	}
 	crc_tab16_init = true;
@@ -51,24 +45,18 @@ uint16_t RodaiSensor::crc_modbus(const unsigned char *input_str, size_t num_byte
 	uint16_t short_c;
 	const unsigned char *ptr;
 	size_t a;
-
 	if (!crc_tab16_init)
 		init_crc16_tab();
-
 	crc = CRC_START_MODBUS;
 	ptr = input_str;
-
 	if (ptr != NULL)
 		for (a = 0; a < num_bytes; a++)
 		{
-
 			short_c = 0x00ff & (uint16_t)*ptr;
 			tmp = crc ^ short_c;
 			crc = (crc >> 8) ^ crc_tab16[tmp & 0xff];
-
 			ptr++;
 		}
-
 	return crc;
 } /* crc_modbus */
 
@@ -104,12 +92,9 @@ int RodaiSensor::readRegisters(uint8_t addr, uint8_t funcCode, uint16_t strAddr,
 	uint16_t crcs = crc_modbus(cmd, 8 - 2);
 	cmd[6] = (uint8_t)crcs;
 	cmd[7] = (crcs & 0xff00) >> 8;
-
 	uart_set_baudrate(_uart_num, tempBaudrate);
 	uart_write_bytes(_uart_num, cmd, 8);
-
 	vTaskDelay(5 / portTICK_PERIOD_MS);
-
 	uint8_t *_data = (uint8_t *)malloc(RS485_BUF_SIZE);
 	int len = 0;
 	for (int i = 0; i < 4; i++)
@@ -132,7 +117,6 @@ int RodaiSensor::readRegisters(uint8_t addr, uint8_t funcCode, uint16_t strAddr,
 			}
 		}
 	}
-
 	free(_data);
 	return len - 2;
 }
@@ -155,7 +139,6 @@ RodaiSensor::RodaiSensor(uart_port_t uart_num,
 		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
 		.rx_flow_ctrl_thresh = 122,
 	};
-
 	uart_param_config(uart_num, &uart_config);
 	uart_set_pin(uart_num, tx_io_num, rx_io_num, rts_io_num, cts_io_num);
 	uart_driver_install(uart_num, RS485_BUF_SIZE * 2, 0, 0, NULL, 0);
@@ -163,6 +146,5 @@ RodaiSensor::RodaiSensor(uart_port_t uart_num,
 	uart_set_mode(uart_num, UART_MODE_RS485_HALF_DUPLEX);
 	// Set read timeout of UART TOUT feature
 	uart_set_rx_timeout(uart_num, RS485_READ_TOUT);
-
 	// xTaskCreate(sensor_rs485_task, "sensor_rs485_task", 1024 * 4, NULL, 5, NULL);
 }
