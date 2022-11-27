@@ -74,7 +74,7 @@ uint16_t RodaiSensor::crc_modbus(const unsigned char *input_str, size_t num_byte
 
 int RodaiSensor::getRodaiSoilWaterContentValue(uint8_t addr)
 {
-	int value = -32768;
+	int value = -999;
 	uint8_t data[256];
 	int len = readRegisters(addr, 3, 6, 2, data);
 	if (len >= 5)
