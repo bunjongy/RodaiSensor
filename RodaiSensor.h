@@ -11,6 +11,8 @@ private:
 	uint16_t crc_tab16[256];
 	void init_crc16_tab(void);
 	uint16_t crc_modbus(const unsigned char *input_str, size_t num_bytes);
+	int readRegisters(uint8_t addr, uint8_t funcCode, uint16_t strAddr, uint16_t count, uint8_t *data);
+	int readRegisters(uint8_t addr, uint8_t funcCode, uint16_t strAddr, uint16_t count, uint8_t *data, int tempBaudrate);
 
 public:
 	RodaiSensor(uart_port_t uart_num = UART_NUM_1,
@@ -20,6 +22,5 @@ public:
 				int cts_io_num = UART_PIN_NO_CHANGE,
 				int baud_rate = 9600);
 
-	int ReadHoldingRegisters(uint8_t addr, uint16_t strAddr, uint16_t count, uint8_t *data);
-	int ReadHoldingRegisters(uint8_t addr, uint16_t strAddr, uint16_t count, uint8_t *data, int temp_baud_rate);
+	int getRodaiSoilWaterContentValue(uint8_t addr);	
 };

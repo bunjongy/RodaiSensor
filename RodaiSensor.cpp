@@ -72,50 +72,31 @@ uint16_t RodaiSensor::crc_modbus(const unsigned char *input_str, size_t num_byte
 	return crc;
 } /* crc_modbus */
 
-static void sensor_rs485_task(void *arg)
+int RodaiSensor::getRodaiSoilWaterContentValue(uint8_t addr)
 {
-
-	unsigned long time_to_read = 0;
-	// Allocate buffers for UART
-	uint8_t *data = (uint8_t *)malloc(RS485_BUF_SIZE);
-
-	const char test16[8] = {0x10, 0x03, 0x00, 0x06, 0x00, 0x05, 0x66, 0x89}; // 10 03 00 06 00 05 66 89
-	for (;;)
+	int value = -32768;
+	uint8_t data[256];
+	int len = readRegisters(addr, 3, 6, 2, data);
+	if (len >= 5)
 	{
-		const unsigned long time1 = (unsigned long)(esp_timer_get_time()) / 1000;
-
-		int len = uart_read_bytes(UART_NUM_1, data, RS485_BUF_SIZE, RS485_PACKET_READ_TICS);
-
-		ESP_LOGI(TAG, "Received len %d :", len);
-
-		if (len >= 4)
-		{
-			uint16_t crcs = 0; // RodaiSensor::crc_modbus(data, len - 2);
-			uint16_t b1 = data[len - 1];
-			uint8_t b2 = data[len - 2];
-			uint16_t _crcs = b1 << 8 | b2;
-			ESP_LOGI(TAG, "Received crc %04X :", crcs);
-		}
-
-		if ((time1 - time_to_read) > 250)
-		{
-			time_to_read = time1;
-			uart_write_bytes(UART_NUM_1, test16, 8);
-		}
-		vTaskDelay(5 / portTICK_PERIOD_MS);
+		uint16_t b3 = data[3];
+		uint16_t b4 = data[4];
+		int16_t did0 = b3 << 8 | b4; // MOIS
+		value = did0;
 	}
+	return value;
 }
 
-int RodaiSensor::ReadHoldingRegisters(uint8_t addr, uint16_t strAddr, uint16_t count, uint8_t *data)
+int RodaiSensor::readRegisters(uint8_t addr, uint8_t funcCode, uint16_t strAddr, uint16_t count, uint8_t *data)
 {
-	return ReadHoldingRegisters(addr, strAddr, count, data, _baud_rate);
+	return readRegisters(addr, funcCode, strAddr, count, data, _baud_rate);
 }
 
-int RodaiSensor::ReadHoldingRegisters(uint8_t addr, uint16_t strAddr, uint16_t count, uint8_t *data, int temp_baud_rate)
+int RodaiSensor::readRegisters(uint8_t addr, uint8_t funcCode, uint16_t strAddr, uint16_t count, uint8_t *data, int tempBaudrate)
 {
 	uint8_t cmd[8] = {};
 	cmd[0] = addr;
-	cmd[1] = 0x03;
+	cmd[1] = funcCode;
 	cmd[2] = (strAddr & 0xff00) >> 8;
 	cmd[3] = (uint8_t)strAddr;
 	cmd[4] = (count & 0xff00) >> 8;
@@ -124,7 +105,7 @@ int RodaiSensor::ReadHoldingRegisters(uint8_t addr, uint16_t strAddr, uint16_t c
 	cmd[6] = (uint8_t)crcs;
 	cmd[7] = (crcs & 0xff00) >> 8;
 
-	uart_set_baudrate(_uart_num, temp_baud_rate);
+	uart_set_baudrate(_uart_num, tempBaudrate);
 	uart_write_bytes(_uart_num, cmd, 8);
 
 	vTaskDelay(5 / portTICK_PERIOD_MS);
