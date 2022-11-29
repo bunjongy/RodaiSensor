@@ -5,6 +5,8 @@
 #include "driver/uart.h"
 #include "freertos/queue.h"
 #include "esp_log.h"
+#include "driver/gpio.h"
+#include "sdkconfig.h"
 
 #define CRC_START_MODBUS 0xFFFF
 #define CRC_POLY_16 0xA001
